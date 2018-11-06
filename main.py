@@ -31,7 +31,7 @@ def evaluate_policy(policy, eval_episodes=10):
 
 
 if __name__ == "__main__":
-	
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--policy_name", default="TD3")					# Policy name
 	parser.add_argument("--env_name", default="HalfCheetah-v1")			# OpenAI gym environment name
@@ -42,13 +42,13 @@ if __name__ == "__main__":
 	parser.add_argument("--save_models", action="store_true")			# Whether or not models are saved
 	parser.add_argument("--expl_noise", default=0.1, type=float)		# Std of Gaussian exploration noise
 	parser.add_argument("--batch_size", default=100, type=int)			# Batch size for both actor and critic
-	parser.add_argument("--discount", default=0.99, type=float)			# Discount factor
-	parser.add_argument("--tau", default=0.005, type=float)				# Target network update rate
-	parser.add_argument("--policy_noise", default=0.2, type=float)		# Noise added to target policy during critic update
-	parser.add_argument("--noise_clip", default=0.5, type=float)		# Range to clip target policy noise
-    parser.add_argument("--policy_freq", default=2, type=int)			# Frequency of delayed policy updates
+    parser.add_argument("--discount", default=0.99, type=float)  # Discount factor
+    parser.add_argument("--tau", default=0.005, type=float)  # Target network update rate
+    parser.add_argument("--policy_noise", default=0.2, type=float)  # Noise added to target policy during critic update
+    parser.add_argument("--noise_clip", default=0.5, type=float)  # Range to clip target policy noise
+    parser.add_argument("--policy_freq", default=2, type=int)  # Frequency of delayed policy updates
     parser.add_argument("--log", action="store_true")
-	args = parser.parse_args()
+    args = parser.parse_args()
     if args.log:
         print("aa")
         experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
@@ -71,9 +71,9 @@ if __name__ == "__main__":
 	env.seed(args.seed)
 	torch.manual_seed(args.seed)
 	np.random.seed(args.seed)
-	
+
 	state_dim = env.observation_space.shape[0]
-	action_dim = env.action_space.shape[0] 
+	action_dim = env.action_space.shape[0]
 	max_action = float(env.action_space.high[0])
 
 	# Initialize policy
@@ -82,51 +82,51 @@ if __name__ == "__main__":
 	elif args.policy_name == "DDPG": policy = DDPG.DDPG(state_dim, action_dim, max_action)
 
 	replay_buffer = utils.ReplayBuffer()
-	
+
 	# Evaluate untrained policy
-	evaluations = [evaluate_policy(policy)] 
+	evaluations = [evaluate_policy(policy)]
 
 	total_timesteps = 0
 	timesteps_since_eval = 0
 	episode_num = 0
-	done = True 
+	done = True
 
 	while total_timesteps < args.max_timesteps:
-		
-		if done: 
 
-			if total_timesteps != 0: 
+		if done:
+
+			if total_timesteps != 0:
 				print("Total T: ",total_timesteps, " Episode Num: ",episode_num," Episode T: ",episode_timesteps," Reward: ",episode_reward)
 				if args.policy_name == "TD3":
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
-				else: 
+				else:
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
-			
+
 			# Evaluate episode
 			if timesteps_since_eval >= args.eval_freq:
 				timesteps_since_eval %= args.eval_freq
 				evaluations.append(evaluate_policy(policy))
-				
+
 				if args.save_models: policy.save(file_name, directory="./pytorch_models")
-				np.save("./results/%s" % (file_name), evaluations) 
-			
+				np.save("./results/%s" % (file_name), evaluations)
+
 			# Reset environment
 			obs = env.reset()
 			done = False
 			episode_reward = 0
 			episode_timesteps = 0
-			episode_num += 1 
-		
+			episode_num += 1
+
 		# Select action randomly or according to policy
 		if total_timesteps < args.start_timesteps:
 			action = env.action_space.sample()
 		else:
 			action = policy.select_action(np.array(obs))
-			if args.expl_noise != 0: 
+			if args.expl_noise != 0:
 				action = (action + np.random.normal(0, args.expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
 
 		# Perform action
-		new_obs, reward, done, _ = env.step(action) 
+		new_obs, reward, done, _ = env.step(action)
 		done_bool = 0 if episode_timesteps + 1 == env._max_episode_steps else float(done)
 		episode_reward += reward
 
@@ -138,8 +138,8 @@ if __name__ == "__main__":
 		episode_timesteps += 1
 		total_timesteps += 1
 		timesteps_since_eval += 1
-		
-	# Final evaluation 
+
+	# Final evaluation
 	evaluations.append(evaluate_policy(policy))
 	if args.save_models: policy.save("%s" % (file_name), directory="./pytorch_models")
-	np.save("./results/%s" % (file_name), evaluations)  
+	np.save("./results/%s" % (file_name), evaluations)
