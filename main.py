@@ -1,4 +1,4 @@
-import comet_ml
+from comet_ml import Experiment
 import numpy as np
 import torch
 import gym
