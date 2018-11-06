@@ -95,7 +95,9 @@ if __name__ == "__main__":
 
 			if total_timesteps != 0:
 				print("Total T: ",total_timesteps, " Episode Num: ",episode_num," Episode T: ",episode_timesteps," Reward: ",episode_reward)
-				if args.policy_name == "TD3":
+                experiment.log_multiple_metrics({"Average reward": episode_reward.mean()}, step=total_timesteps)
+
+                if args.policy_name == "TD3":
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
 				else:
 					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
@@ -104,7 +106,6 @@ if __name__ == "__main__":
 			if timesteps_since_eval >= args.eval_freq:
 				timesteps_since_eval %= args.eval_freq
 				evaluations.append(evaluate_policy(policy))
-				experiment.log_multiple_metrics({"Average reward":evaluations[-1]},step=total_timesteps)
 				if args.save_models: policy.save(file_name, directory="./pytorch_models")
 				np.save("./results/%s" % (file_name), evaluations)
 
