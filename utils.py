@@ -12,7 +12,7 @@ class ReplayBuffer(object):
 	def add(self, data):
 		self.storage.append(data)
 
-	def sample(self, batch_size=100):
+	def sample(self, batch_size=100,N_backprop=1):
 		ind = np.random.randint(0, len(self.storage), size=batch_size)
 		ind_list = [ range(i-N_backprop,i,1) for i in ind]
 		ind = [item for sublist in ind_list for item in sublist]
