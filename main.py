@@ -52,9 +52,8 @@ if __name__ == "__main__":
 	if args.log:
 		print("aa")
 		experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
-                                project_name="ddpg", workspace="pierthodo", disabled=args.disable_log)
-
-	experiment.log_multiple_params(vars(args))
+                                project_name="ddpg", workspace="pierthodo")
+		experiment.log_multiple_params(vars(args))
 	file_name = "%s_%s_%s" % (args.policy_name, args.env_name, str(args.seed))
 	print("---------------------------------------")
 	print("Settings: %s" % (file_name))
