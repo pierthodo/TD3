@@ -53,6 +53,8 @@ if __name__ == "__main__":
         experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
                                 project_name="ddpg", workspace="pierthodo")
         experiment.log_multiple_params(vars(args))
+        experiment.disable_mp()
+
     file_name = "%s_%s_%s" % (args.policy_name, args.env_name, str(args.seed))
     print("---------------------------------------")
     print("Settings: %s" % (file_name))
@@ -88,7 +90,6 @@ if __name__ == "__main__":
     timesteps_since_eval = 0
     episode_num = 0
     done = True
-
     while total_timesteps < args.max_timesteps:
         if done:
             if total_timesteps != 0:
