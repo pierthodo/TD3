@@ -42,16 +42,16 @@ if __name__ == "__main__":
 	parser.add_argument("--save_models", action="store_true")			# Whether or not models are saved
 	parser.add_argument("--expl_noise", default=0.1, type=float)		# Std of Gaussian exploration noise
 	parser.add_argument("--batch_size", default=100, type=int)			# Batch size for both actor and critic
-    parser.add_argument("--discount", default=0.99, type=float)  # Discount factor
-    parser.add_argument("--tau", default=0.005, type=float)  # Target network update rate
-    parser.add_argument("--policy_noise", default=0.2, type=float)  # Noise added to target policy during critic update
-    parser.add_argument("--noise_clip", default=0.5, type=float)  # Range to clip target policy noise
-    parser.add_argument("--policy_freq", default=2, type=int)  # Frequency of delayed policy updates
-    parser.add_argument("--log", action="store_true")
-    args = parser.parse_args()
-    if args.log:
-        print("aa")
-        experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
+	parser.add_argument("--discount", default=0.99, type=float)  # Discount factor
+	parser.add_argument("--tau", default=0.005, type=float)  # Target network update rate
+	parser.add_argument("--policy_noise", default=0.2, type=float)  # Noise added to target policy during critic update
+	parser.add_argument("--noise_clip", default=0.5, type=float)  # Range to clip target policy noise
+	parser.add_argument("--policy_freq", default=2, type=int)  # Frequency of delayed policy updates
+	parser.add_argument("--log", action="store_true")
+	args = parser.parse_args()
+	if args.log:
+		print("aa")
+		experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
                                 project_name="ddpg", workspace="pierthodo", disabled=args.disable_log)
 
 	experiment.log_multiple_params(vars(args))
