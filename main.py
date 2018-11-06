@@ -23,9 +23,9 @@ def evaluate_policy(policy, eval_episodes=10):
 
 	avg_reward /= eval_episodes
 
-	print "---------------------------------------"
-	print "Evaluation over %d episodes: %f" % (eval_episodes, avg_reward)
-	print "---------------------------------------"
+	print("---------------------------------------")
+	print("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
+	print("---------------------------------------")
 	return avg_reward
 
 
@@ -49,9 +49,9 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	file_name = "%s_%s_%s" % (args.policy_name, args.env_name, str(args.seed))
-	print "---------------------------------------"
-	print "Settings: %s" % (file_name)
-	print "---------------------------------------"
+	print("---------------------------------------")
+	print("Settings: %s" % (file_name))
+	print("---------------------------------------")
 
 	if not os.path.exists("./results"):
 		os.makedirs("./results")
