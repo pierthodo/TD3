@@ -90,18 +90,15 @@ if __name__ == "__main__":
 	done = True
 
 	while total_timesteps < args.max_timesteps:
-
 		if done:
-
 			if total_timesteps != 0:
 				print("Total T: ",total_timesteps, " Episode Num: ",episode_num," Episode T: ",episode_timesteps," Reward: ",episode_reward)
                 experiment.log_multiple_metrics({"Average reward": episode_reward.mean()}, step=total_timesteps)
 
                 if args.policy_name == "TD3":
-					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
-				else:
-					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
-
+                    policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
+                else:
+                    policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
 			# Evaluate episode
 			if timesteps_since_eval >= args.eval_freq:
 				timesteps_since_eval %= args.eval_freq
