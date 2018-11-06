@@ -51,7 +51,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	if args.log:
 		experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
-                                project_name="ddpg", workspace="pierthodo")
+								project_name="ddpg", workspace="pierthodo")
 		experiment.log_multiple_params(vars(args))
 	file_name = "%s_%s_%s" % (args.policy_name, args.env_name, str(args.seed))
 	print("---------------------------------------")
@@ -93,13 +93,12 @@ if __name__ == "__main__":
 		if done:
 			if total_timesteps != 0:
 				print("Total T: ",total_timesteps, " Episode Num: ",episode_num," Episode T: ",episode_timesteps," Reward: ",episode_reward)
-                experiment.log_multiple_metrics({"Average reward": episode_reward.mean()}, step=total_timesteps)
 
-                if args.policy_name == "TD3":
-                    policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
-                else:
-                    policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
-			# Evaluate episode
+				if args.policy_name == "TD3":
+					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
+				else:
+					policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
+				# Evaluate episode
 			if timesteps_since_eval >= args.eval_freq:
 				timesteps_since_eval %= args.eval_freq
 				evaluations.append(evaluate_policy(policy))
