@@ -1,3 +1,4 @@
+import comet_ml
 import numpy as np
 import torch
 import gym
@@ -45,9 +46,15 @@ if __name__ == "__main__":
 	parser.add_argument("--tau", default=0.005, type=float)				# Target network update rate
 	parser.add_argument("--policy_noise", default=0.2, type=float)		# Noise added to target policy during critic update
 	parser.add_argument("--noise_clip", default=0.5, type=float)		# Range to clip target policy noise
-	parser.add_argument("--policy_freq", default=2, type=int)			# Frequency of delayed policy updates
+    parser.add_argument("--policy_freq", default=2, type=int)			# Frequency of delayed policy updates
+    parser.add_argument("--log", action="store_true")
 	args = parser.parse_args()
+    if args.log:
+        print("aa")
+        experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
+                                project_name="ddpg", workspace="pierthodo", disabled=args.disable_log)
 
+	experiment.log_multiple_params(vars(args))
 	file_name = "%s_%s_%s" % (args.policy_name, args.env_name, str(args.seed))
 	print("---------------------------------------")
 	print("Settings: %s" % (file_name))
