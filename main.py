@@ -50,7 +50,6 @@ if __name__ == "__main__":
 	parser.add_argument("--log", action="store_true")
 	args = parser.parse_args()
 	if args.log:
-		print("aa")
 		experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
                                 project_name="ddpg", workspace="pierthodo")
 		experiment.log_multiple_params(vars(args))
@@ -105,7 +104,7 @@ if __name__ == "__main__":
 			if timesteps_since_eval >= args.eval_freq:
 				timesteps_since_eval %= args.eval_freq
 				evaluations.append(evaluate_policy(policy))
-
+				experiment.log_multiple_metrics({"Average reward":evaluations[-1]},step=total_timesteps)
 				if args.save_models: policy.save(file_name, directory="./pytorch_models")
 				np.save("./results/%s" % (file_name), evaluations)
 
