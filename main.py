@@ -93,7 +93,7 @@ if __name__ == "__main__":
         if done:
             if total_timesteps != 0:
                 print("Total T: ",total_timesteps, " Episode Num: ",episode_num," Episode T: ",episode_timesteps," Reward: ",episode_reward)
-
+                experiment.log_multiple_metrics({"Episode reward":episode_reward},step=total_timesteps)
                 if args.policy_name == "TD3":
                     policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
                 else:
