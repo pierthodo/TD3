@@ -33,7 +33,7 @@ def evaluate_policy(policy, eval_episodes=10):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--policy_name", default="TD3")					# Policy name
+    parser.add_argument("--policy_name", default="OurDDPG")					# Policy name
     parser.add_argument("--env_name", default="HalfCheetah-v1")			# OpenAI gym environment name
     parser.add_argument("--seed", default=0, type=int)					# Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--start_timesteps", default=1e4, type=int)		# How many time steps purely random policy is run for
@@ -47,11 +47,17 @@ if __name__ == "__main__":
     parser.add_argument("--policy_noise", default=0.2, type=float)  # Noise added to target policy during critic update
     parser.add_argument("--noise_clip", default=0.5, type=float)  # Range to clip target policy noise
     parser.add_argument("--policy_freq", default=2, type=int)  # Frequency of delayed policy updates
-    parser.add_argument("--log", action="store_true")
+    
+    # "new" args
+    parser.add_argument("--log", type=int, default=1)
+    parser.add_argument('--n_backprop', type=int, default=1)
+    parser.add_argument('--action_conditional_beta', type=int, default=0)
+    parser.add_argument('--beta_lr', type=float, default=1e-3)
     args = parser.parse_args()
+    
     if args.log:
         experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
-                                project_name="ddpg", workspace="pierthodo",auto_output_logging="None")
+                                project_name="ddpg", workspace="pierthodo", auto_output_logging="None")
         experiment.log_multiple_params(vars(args))
         experiment.disable_mp()
 
@@ -78,7 +84,7 @@ if __name__ == "__main__":
 
     # Initialize policy
     if args.policy_name == "TD3": policy = TD3.TD3(state_dim, action_dim, max_action)
-    elif args.policy_name == "OurDDPG": policy = OurDDPG.DDPG(state_dim, action_dim, max_action)
+    elif args.policy_name == "OurDDPG": policy = OurDDPG.DDPG(state_dim, action_dim, max_action, args)
     elif args.policy_name == "DDPG": policy = DDPG.DDPG(state_dim, action_dim, max_action)
 
     replay_buffer = utils.ReplayBuffer()
@@ -93,12 +99,19 @@ if __name__ == "__main__":
     while total_timesteps < args.max_timesteps:
         if done:
             if total_timesteps != 0:
-                print("Total T: ",total_timesteps, " Episode Num: ",episode_num," Episode T: ",episode_timesteps," Reward: ",episode_reward)
-                experiment.log_multiple_metrics({"Episode reward":episode_reward},step=total_timesteps)
+                betas = np.array(betas)
+                mean_beta, var_beta = betas.mean(), betas.var()
+
+                print("Total T: ",total_timesteps, " Episode Num: ",episode_num," Episode T: ",episode_timesteps,
+                      " Reward: ",episode_reward, "beta mean: ", mean_beta, "beta var: ", var_beta)
+                
+                if args.log:
+                    experiment.log_multiple_metrics({"Episode reward":episode_reward, 'Episode Beta Mean':mean_beta, 'Episode Beta Var':var_beta},step=total_timesteps)
                 if args.policy_name == "TD3":
                     policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
                 else:
-                    policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
+                    policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.n_backprop)
+                
                 # Evaluate episode
             if timesteps_since_eval >= args.eval_freq:
                 timesteps_since_eval %= args.eval_freq
@@ -112,6 +125,7 @@ if __name__ == "__main__":
             episode_reward = 0
             episode_timesteps = 0
             episode_num += 1
+            betas = []
 
         # Select action randomly or according to policy
         if total_timesteps < args.start_timesteps:
@@ -120,6 +134,10 @@ if __name__ == "__main__":
             action = policy.select_action(np.array(obs))
             if args.expl_noise != 0:
                 action = (action + np.random.normal(0, args.expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
+            
+        if args.n_backprop > 1: 
+            # track beta
+            betas += [policy.query_beta(np.array(obs), action).item()]
 
         # Perform action
         new_obs, reward, done, _ = env.step(action)
@@ -127,7 +145,7 @@ if __name__ == "__main__":
         episode_reward += reward
 
         # Store data in replay buffer
-        replay_buffer.add((obs, new_obs, action, reward, done_bool))
+        replay_buffer.add((obs, new_obs, action, reward, done_bool), episode_num=episode_num)
 
         obs = new_obs
 
