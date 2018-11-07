@@ -51,7 +51,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.log:
         experiment = Experiment(api_key="HFFoR5WtTjoHuBGq6lYaZhG0c",
-                                project_name="ddpg", workspace="pierthodo")
+                                project_name="ddpg", workspace="pierthodo",auto_output_logging="None")
         experiment.log_multiple_params(vars(args))
         experiment.disable_mp()
 
