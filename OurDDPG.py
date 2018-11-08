@@ -76,7 +76,7 @@ class DDPG(object):
 
                 if args.n_backprop > 1: 
                     self.beta = BetaNN(state_dim, action_dim, args.action_conditional_beta).to(device)
-                    self.beta_optimizer = torch.optim.Adam(self.beta.parameters(), lr=args.beta_lr)                  
+                    self.beta_optimizer = torch.optim.Adam(self.beta.parameters(), lr=args.beta_lr)
 
 
         def select_action(self, state):
@@ -94,7 +94,6 @@ class DDPG(object):
 
 
         def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, n_backprop=1):
-
                 for it in range(iterations):
 
                         # Sample replay buffer 
@@ -129,8 +128,7 @@ class DDPG(object):
 
                                 # get beta value
                                 beta_t = self.beta(state_t, action_t)
-
-                                prev_value = done_t * current_Q_t + (1 - done_t) * prev_value
+                                prev_value = (1-done_t) * current_Q_t + (done_t) * prev_value
                                 prev_value = beta_t * current_Q_t + (1 - beta_t) * prev_value - reward_t
                             else:
                                 # Good ol' DDPG --> next block of code will -re- add the last reward_t, 
@@ -146,15 +144,16 @@ class DDPG(object):
                         # Compute critic loss
                         critic_loss = F.mse_loss(current_Q, target_Q)
 
-                        # Optimize the critic
-                        self.critic_optimizer.zero_grad()
-                        critic_loss.backward(retain_graph=True)
-                        self.critic_optimizer.step()
-                        
                         # Optimize Beta Network
                         self.beta_optimizer.zero_grad()
-                        critic_loss.backward()
+                        critic_loss.backward(retain_graph=True)
                         self.beta_optimizer.step()
+
+                        # Optimize the critic
+                        self.critic_optimizer.zero_grad()
+                        critic_loss.backward()
+                        self.critic_optimizer.step()
+                        
 
                         # Compute actor loss
                         actor_loss = -self.critic(state[:, 0], self.actor(state[:, 0])).mean()
