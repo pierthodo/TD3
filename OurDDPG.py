@@ -76,6 +76,8 @@ class DDPG(object):
 
                 if args.n_backprop > 1: 
                     self.beta = BetaNN(state_dim, action_dim, args.action_conditional_beta).to(device)
+                    self.beta_target = BetaNN(state_dim, action_dim, args.action_conditional_beta).to(device)
+                    self.beta_target.load_state_dict(self.beta.state_dict())
                     self.beta_optimizer = torch.optim.Adam(self.beta.parameters(), lr=args.beta_lr)
 
 
@@ -90,7 +92,7 @@ class DDPG(object):
             if len(state.size()) == 2: 
                 state, action = state.unsqueeze(0), action.unsqueeze(0)
 
-            return self.beta(state, action).cpu().data.numpy()
+            return self.beta_target(state, action).cpu().data.numpy()
 
 
         def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, n_backprop=1):
@@ -172,6 +174,8 @@ class DDPG(object):
                         for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                                 target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
+                        for param, target_param in zip(self.beta.parameters(), self.beta_target.parameters()):
+                                target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
         def save(self, filename, directory):
                 torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
