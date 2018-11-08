@@ -145,9 +145,11 @@ class DDPG(object):
                         critic_loss = F.mse_loss(current_Q, target_Q)
 
                         # Optimize Beta Network
-                        self.beta_optimizer.zero_grad()
-                        critic_loss.backward(retain_graph=True)
-                        self.beta_optimizer.step()
+
+                        if n_backprop > 1:
+                            self.beta_optimizer.zero_grad()
+                            critic_loss.backward(retain_graph=True)
+                            self.beta_optimizer.step()
 
                         # Optimize the critic
                         self.critic_optimizer.zero_grad()
