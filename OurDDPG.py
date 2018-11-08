@@ -173,9 +173,9 @@ class DDPG(object):
 
                         for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                                 target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-
-                        for param, target_param in zip(self.beta.parameters(), self.beta_target.parameters()):
-                                target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+                        if n_backprop > 1:
+                            for param, target_param in zip(self.beta.parameters(), self.beta_target.parameters()):
+                                    target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
         def save(self, filename, directory):
                 torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
