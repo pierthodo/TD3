@@ -128,7 +128,9 @@ if __name__ == "__main__":
                 betas = np.array(betas)
                 if args.scatter:
                     plt.scatter(betas[:,0],betas[:,1])
+                    plt.ylim(0,1)
                     experiment.log_figure( figure_name=total_timesteps, figure=None)
+                    plt.clf()
 
             # Reset environment
             obs = env.reset()
