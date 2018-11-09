@@ -5,6 +5,8 @@ import gym
 import argparse
 import os
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+
 import utils
 import TD3
 import OurDDPG
@@ -15,7 +17,6 @@ import DDPG
 def evaluate_policy(policy, eval_episodes=10,eval_beta=0):
     avg_reward = 0.
     beta_list = []
-    color_list = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
     for n in range(eval_episodes):
         obs = env.reset()
         done = False
@@ -26,7 +27,7 @@ def evaluate_policy(policy, eval_episodes=10,eval_beta=0):
             obs, reward, done, _ = env.step(action)
             avg_reward += reward
             if eval_beta:
-                beta_list += [[counter,policy.query_beta(np.array(obs), action).item(),color_list[n]]]
+                beta_list += [[counter,policy.query_beta(np.array(obs), action).item(),int(n)]]
     avg_reward /= eval_episodes
 
     print("---------------------------------------")
@@ -127,8 +128,11 @@ if __name__ == "__main__":
                 if args.save_models: policy.save(file_name, directory="./pytorch_models")
                 np.save("./results/%s" % (file_name), evaluations)
                 betas = np.array(betas)
+                color_list  = cm.rainbow(np.linspace(0, 1,10))
                 if args.scatter:
+                    print(betas[:,2])
                     plt.scatter(betas[:,0],betas[:,1],c=betas[:,2])
+                    print(betas[:,2])
                     plt.ylim(0,1)
                     experiment.log_figure( figure_name=total_timesteps, figure=None)
                     plt.clf()
