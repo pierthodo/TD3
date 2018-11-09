@@ -4,7 +4,7 @@ import torch
 import gym
 import argparse
 import os
-
+import matplotlib.pyplot as plt
 import utils
 import TD3
 import OurDDPG
@@ -14,20 +14,23 @@ import DDPG
 # Runs policy for X episodes and returns average reward
 def evaluate_policy(policy, eval_episodes=10):
     avg_reward = 0.
+    beta_list = []
     for _ in range(eval_episodes):
         obs = env.reset()
         done = False
+        counter = 0
         while not done:
+            counter += 1
             action = policy.select_action(np.array(obs))
             obs, reward, done, _ = env.step(action)
             avg_reward += reward
-
+            beta_list += [[counter,policy.query_beta(np.array(obs), action).item()]]
     avg_reward /= eval_episodes
 
     print("---------------------------------------")
     print("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
     print("---------------------------------------")
-    return avg_reward
+    return avg_reward,np.array(beta_list)
 
 
 if __name__ == "__main__":
@@ -49,6 +52,7 @@ if __name__ == "__main__":
     parser.add_argument("--policy_freq", default=2, type=int)  # Frequency of delayed policy updates
     
     # "new" args
+    parser.add_argument("--scatter",type=int,default=0)
     parser.add_argument("--log", type=int, default=1)
     parser.add_argument('--n_backprop', type=int, default=1)
     parser.add_argument('--action_conditional_beta', type=int, default=0)
@@ -90,7 +94,8 @@ if __name__ == "__main__":
     replay_buffer = utils.ReplayBuffer()
 
     # Evaluate untrained policy
-    evaluations = [evaluate_policy(policy)]
+    tmp,_ = evaluate_policy(policy)
+    evaluations = [tmp]
 
     total_timesteps = 0
     timesteps_since_eval = 0
@@ -115,9 +120,14 @@ if __name__ == "__main__":
                 # Evaluate episode
             if timesteps_since_eval >= args.eval_freq:
                 timesteps_since_eval %= args.eval_freq
-                evaluations.append(evaluate_policy(policy))
+                reward,betas = evaluate_policy(policy)
+                evaluations.append(reward)
                 if args.save_models: policy.save(file_name, directory="./pytorch_models")
                 np.save("./results/%s" % (file_name), evaluations)
+                betas = np.array(betas)
+                if args.scatter:
+                    plt.scatter(betas[:,0],betas[:,1])
+                    experiment.log_figure( figure_name=total_timesteps, figure=None)
 
             # Reset environment
             obs = env.reset()
