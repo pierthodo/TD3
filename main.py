@@ -12,7 +12,7 @@ import DDPG
 
 
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, eval_episodes=10):
+def evaluate_policy(policy, eval_episodes=10,eval_beta=0):
     avg_reward = 0.
     beta_list = []
     for _ in range(eval_episodes):
@@ -24,7 +24,8 @@ def evaluate_policy(policy, eval_episodes=10):
             action = policy.select_action(np.array(obs))
             obs, reward, done, _ = env.step(action)
             avg_reward += reward
-            beta_list += [[counter,policy.query_beta(np.array(obs), action).item()]]
+            if eval_beta:
+                beta_list += [[counter,policy.query_beta(np.array(obs), action).item()]]
     avg_reward /= eval_episodes
 
     print("---------------------------------------")
@@ -120,7 +121,7 @@ if __name__ == "__main__":
                 # Evaluate episode
             if timesteps_since_eval >= args.eval_freq:
                 timesteps_since_eval %= args.eval_freq
-                reward,betas = evaluate_policy(policy)
+                reward,betas = evaluate_policy(policy,eval_beta=args.scatter)
                 evaluations.append(reward)
                 if args.save_models: policy.save(file_name, directory="./pytorch_models")
                 np.save("./results/%s" % (file_name), evaluations)
