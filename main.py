@@ -128,7 +128,7 @@ if __name__ == "__main__":
                 np.save("./results/%s" % (file_name), evaluations)
                 betas = np.array(betas)
                 if args.scatter:
-                    plt.scatter(betas[:,0],betas[:,1],color=betas[:,2])
+                    plt.scatter(betas[:,0],betas[:,1],c=betas[:,2])
                     plt.ylim(0,1)
                     experiment.log_figure( figure_name=total_timesteps, figure=None)
                     plt.clf()
