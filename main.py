@@ -15,7 +15,8 @@ import DDPG
 def evaluate_policy(policy, eval_episodes=10,eval_beta=0):
     avg_reward = 0.
     beta_list = []
-    for _ in range(eval_episodes):
+    color_list = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
+    for n in range(eval_episodes):
         obs = env.reset()
         done = False
         counter = 0
@@ -25,7 +26,7 @@ def evaluate_policy(policy, eval_episodes=10,eval_beta=0):
             obs, reward, done, _ = env.step(action)
             avg_reward += reward
             if eval_beta:
-                beta_list += [[counter,policy.query_beta(np.array(obs), action).item()]]
+                beta_list += [[counter,policy.query_beta(np.array(obs), action).item(),color_list[n]]]
     avg_reward /= eval_episodes
 
     print("---------------------------------------")
@@ -127,7 +128,7 @@ if __name__ == "__main__":
                 np.save("./results/%s" % (file_name), evaluations)
                 betas = np.array(betas)
                 if args.scatter:
-                    plt.scatter(betas[:,0],betas[:,1])
+                    plt.scatter(betas[:,0],betas[:,1],color=betas[:,3])
                     plt.ylim(0,1)
                     experiment.log_figure( figure_name=total_timesteps, figure=None)
                     plt.clf()
