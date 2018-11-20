@@ -20,25 +20,25 @@ class ReplayBuffer(object):
 
         def sample(self, batch_size=100,N_backprop=1):
                 # sample random indices from buffer
-                ind = np.arange(len(self.storage))
-                np.random.shuffle(ind) 
-                
-                ind_list = [ range(i-N_backprop,i,1) for i in ind]
+                ind = np.random.randint(0, len(self.storage), size=batch_size)                                
                 x, y, u, r, d = [], [], [], [], []
 
                 current_size = 0
                 current_i    = 0
                 while current_size < batch_size:
-                        current_i += 1
                         i = ind[current_i]
                         
                         # make sure the sampled indices are not over two episodes
-                        if i > N_backprop and sum([i - j in self.new_episode_index for j in range(N_backprop)]) == 0:
+                        if sum([i - j in self.new_episode_index for j in range(N_backprop)]) == 0:
                             current_size += 1
                             curr_x, curr_y, curr_u, curr_r, curr_d = [], [], [], [], []
-                        
+                            
                             for j in range(N_backprop):
-                                X, Y, U, R, D = self.storage[i - (N_backprop - j + 1)]
+                                idx = i - (N_backprop - j + 1)
+                                if idx < 0:
+				    idx =0
+                                
+                                X, Y, U, R, D = self.storage[idx]
 
                                 curr_x.append(np.array(X, copy=False))
                                 curr_y.append(np.array(Y, copy=False))
@@ -55,6 +55,7 @@ class ReplayBuffer(object):
                         else: 
                             pass
                             # print('invalid index {}'.format(i))
+                        current_i += 1
 
                 out = np.array(x), np.array(y), np.array(u), np.array(r).reshape(-1, N_backprop, 1), np.array(d).reshape(-1, N_backprop, 1)
                 # out = [item.squeeze(axis=1) for item in out]
