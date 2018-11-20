@@ -36,7 +36,7 @@ class ReplayBuffer(object):
                             for j in range(N_backprop):
                                 idx = i - (N_backprop - j + 1)
                                 if idx < 0:
-				    idx =0
+                                    idx =0
                                 
                                 X, Y, U, R, D = self.storage[idx]
 
